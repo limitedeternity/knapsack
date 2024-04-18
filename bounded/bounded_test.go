@@ -28,7 +28,7 @@ var (
 	solutions = map[string]Solution{}
 )
 
-func printSolution(sol Solution) {
+func printSolution(sol *Solution) {
 	fmt.Println("Taking:")
 	for i, q := range sol.Quantities {
 		if q > 0 {
@@ -51,7 +51,7 @@ func TestSimpleSolver(t *testing.T) {
 		solutions["SimpleSolver"] = sol
 	}
 
-	printSolution(sol)
+	printSolution(&sol)
 
 	require.LessOrEqual(t, sol.Weight, capacity)
 	require.Equal(t, sol.Value, sol.Weight)
@@ -80,7 +80,7 @@ func TestDPSolver(t *testing.T) {
 		solutions["DPSolver"] = sol
 	}
 
-	printSolution(sol)
+	printSolution(&sol)
 
 	require.LessOrEqual(t, sol.Weight, capacity)
 	require.Equal(t, sol.Value, sol.Weight)
