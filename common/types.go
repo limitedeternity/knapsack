@@ -38,8 +38,12 @@ type Knapsack[I any, S Solver] struct {
 	Items []I
 }
 
-func NewKnapsack[I any, S Solver]() *Knapsack[I, S] {
-	return &Knapsack[I, S]{}
+func NewKnapsack[I any, S Solver](limit ...int) *Knapsack[I, S] {
+	if len(limit) == 0 {
+		return &Knapsack[I, S]{}
+	} else {
+		return &Knapsack[I, S]{Limit: limit[0]}
+	}
 }
 
 func (k *Knapsack[I, S]) WithCapacity(limit int) *Knapsack[I, S] {
