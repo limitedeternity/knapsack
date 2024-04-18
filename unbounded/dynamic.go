@@ -1,41 +1,36 @@
 package unbounded
 
-import "log"
+import (
+	. "knapsack/common"
+)
 
-type Dynamic struct {
-	knapsack *Knapsack[Dynamic]
+type DPSolver struct {
+	SolverBase[Item, *DPSolver]
 }
 
-func (s Dynamic) WithKnapsack(knapsack any) Solver {
-	switch v := knapsack.(type) {
-	case *Knapsack[Dynamic]:
-		s.knapsack = v
-	default:
-		log.Fatalf("Unsupported knapsack type: %T", v)
-	}
-
-	return s
+func (s *DPSolver) GetBase() ISolverBase {
+	return &s.SolverBase
 }
 
-func (s Dynamic) Solve() Solution {
-	solutions := make([]Solution, s.knapsack.Limit+1)
+func (s *DPSolver) Solve() Solution {
+	solutions := make([]Solution, s.Knapsack.Limit+1)
 
-	for i, item := range s.knapsack.Items {
-		for weight := s.knapsack.Limit; weight >= 0; weight-- {
+	for i, item := range s.Knapsack.Items {
+		for weight := s.Knapsack.Limit; weight >= 0; weight-- {
 			if weight >= item.Weight {
 				withoutSolution := solutions[weight-item.Weight]
 				potentialValue := withoutSolution.Value + item.Value
 
 				if potentialValue > solutions[weight].Value {
 					solutions[weight] = Solution{Weight: withoutSolution.Weight + item.Weight, Value: potentialValue}
-					solutions[weight].Quantities = make([]int, len(s.knapsack.Items))
+					solutions[weight].Quantities = make([]int, len(s.Knapsack.Items))
 
 					copy(solutions[weight].Quantities, withoutSolution.Quantities)
-					solutions[weight].Quantities[i]++
+					solutions[weight].Quantities[i] += 1
 				}
 			}
 		}
 	}
 
-	return solutions[s.knapsack.Limit]
+	return solutions[s.Knapsack.Limit]
 }
