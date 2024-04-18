@@ -1,7 +1,7 @@
 package unbounded
 
 type Item struct {
-	Item   string
-	Weight int
-	Value  int
+	Item   string `yaml:"item"`
+	Weight int    `yaml:"weight"`
+	Value  int    `yaml:"value"`
 }

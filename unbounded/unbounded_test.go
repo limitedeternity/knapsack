@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 
 	. "knapsack/common"
 	. "knapsack/functools"
@@ -64,4 +65,31 @@ func TestDPSolver(t *testing.T) {
 		},
 		0),
 	)
+}
+
+func TestItem_Unmarshal(t *testing.T) {
+	t.Run("Simple", func(t *testing.T) {
+		data := []byte(`
+item: 1m
+weight: 1
+value: 1
+`)
+
+		var item Item
+		require.NoError(t, yaml.Unmarshal(data, &item))
+		require.Equal(t, item, items[0])
+	})
+}
+
+func TestItem_Marshal(t *testing.T) {
+	t.Run("Simple", func(t *testing.T) {
+		expected := `item: 1m
+weight: 1
+value: 1
+`
+
+		data, err := yaml.Marshal(items[0])
+		require.NoError(t, err)
+		require.Equal(t, expected, string(data))
+	})
 }

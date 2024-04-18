@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 
 	. "knapsack/common"
 	. "knapsack/functools"
@@ -103,4 +104,45 @@ func TestSameResults(t *testing.T) {
 	t.Run("TestDPSolver", TestDPSolver)
 
 	require.True(t, reflect.DeepEqual(solutions["SimpleSolver"], solutions["DPSolver"]))
+}
+
+func TestItem_Unmarshal(t *testing.T) {
+	t.Run("Simple", func(t *testing.T) {
+		data := []byte(`
+item: FXIP
+weight: 66
+value: 66
+pieces: 481
+`)
+
+		var item Item
+		require.NoError(t, yaml.Unmarshal(data, &item))
+		require.Equal(t, item, items[0])
+	})
+
+	t.Run("DefaultPieces", func(t *testing.T) {
+		data := []byte(`
+item: Tree
+weight: 10
+value: 1
+`)
+
+		var item Item
+		require.NoError(t, yaml.Unmarshal(data, &item))
+		require.Equal(t, item, Item{Item: "Tree", Weight: 10, Value: 1, Pieces: 1})
+	})
+}
+
+func TestItem_Marshal(t *testing.T) {
+	t.Run("Simple", func(t *testing.T) {
+		expected := `item: FXIP
+weight: 66
+value: 66
+pieces: 481
+`
+
+		data, err := yaml.Marshal(items[0])
+		require.NoError(t, err)
+		require.Equal(t, expected, string(data))
+	})
 }
