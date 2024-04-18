@@ -8,6 +8,7 @@ type Item struct {
 }
 
 type Knapsack[S Solver] struct {
+	Limit int
 	Items []Item
 }
 
@@ -19,16 +20,18 @@ type Solution struct {
 
 type Solver interface {
 	WithKnapsack(knapsack any) Solver
-	Solve(limit int) Solution
+	Solve() Solution
 }
 
-func NewKnapsack[S Solver](items []Item) *Knapsack[S] {
-	return &Knapsack[S]{Items: items}
+func NewKnapsack[S Solver](limit int) *Knapsack[S] {
+	return &Knapsack[S]{Limit: limit}
 }
 
-func (k *Knapsack[S]) Pack(limit int) Solution {
+func (k *Knapsack[S]) Pack(items []Item) Solution {
+	k.Items = items
+
 	solver := new(S)
-	sol := (*solver).WithKnapsack(k).Solve(limit)
+	sol := (*solver).WithKnapsack(k).Solve()
 
 	solver = nil
 	return sol

@@ -80,7 +80,8 @@ func TestBruteForce(t *testing.T) {
 	)
 
 	if sol, ok = solutions["BruteForce"]; !ok {
-		sol = NewKnapsack[BruteForce](items).Pack(capacity)
+		sol = NewKnapsack[BruteForce](capacity).Pack(items)
+		solutions["BruteForce"] = sol
 	}
 
 	printSolution(sol)
@@ -99,8 +100,6 @@ func TestBruteForce(t *testing.T) {
 		},
 		0),
 	)
-
-	solutions["BruteForce"] = sol
 }
 
 func TestDynamic(t *testing.T) {
@@ -110,7 +109,8 @@ func TestDynamic(t *testing.T) {
 	)
 
 	if sol, ok = solutions["Dynamic"]; !ok {
-		sol = NewKnapsack[Dynamic](items).Pack(capacity)
+		sol = NewKnapsack[Dynamic](capacity).Pack(items)
+		solutions["Dynamic"] = sol
 	}
 
 	printSolution(sol)
@@ -129,8 +129,6 @@ func TestDynamic(t *testing.T) {
 		},
 		0),
 	)
-
-	solutions["Dynamic"] = sol
 }
 
 func TestSameResults(t *testing.T) {

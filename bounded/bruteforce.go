@@ -23,9 +23,9 @@ func (s BruteForce) WithKnapsack(knapsack any) Solver {
 	return s
 }
 
-func (s BruteForce) Solve(limit int) Solution {
+func (s BruteForce) Solve() Solution {
 	s.cache = make(map[key]Solution)
-	sol := s.impl(limit, len(s.knapsack.Items)-1)
+	sol := s.impl(s.knapsack.Limit, len(s.knapsack.Items)-1)
 
 	s.cache = nil
 	return sol
