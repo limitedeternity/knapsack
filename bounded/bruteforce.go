@@ -1,10 +1,12 @@
 package bounded
 
-import "log"
+import (
+	. "knapsack/common"
+)
 
-type BruteForce struct {
-	knapsack *Knapsack[BruteForce]
-	cache    map[key]Solution
+type SimpleSolver struct {
+	SolverBase[Item, *SimpleSolver]
+	cache map[key]Solution
 }
 
 type key struct {
@@ -12,26 +14,19 @@ type key struct {
 	position int
 }
 
-func (s BruteForce) WithKnapsack(knapsack any) Solver {
-	switch v := knapsack.(type) {
-	case *Knapsack[BruteForce]:
-		s.knapsack = v
-	default:
-		log.Fatalf("Unsupported knapsack type: %T", v)
-	}
-
-	return s
+func (s *SimpleSolver) GetBase() ISolverBase {
+	return &s.SolverBase
 }
 
-func (s BruteForce) Solve() Solution {
+func (s *SimpleSolver) Solve() Solution {
 	s.cache = make(map[key]Solution)
-	sol := s.impl(s.knapsack.Limit, len(s.knapsack.Items)-1)
+	sol := s.impl(s.Knapsack.Limit, len(s.Knapsack.Items)-1)
 
 	s.cache = nil
 	return sol
 }
 
-func (s BruteForce) impl(limit int, position int) Solution {
+func (s *SimpleSolver) impl(limit int, position int) Solution {
 	if position < 0 || limit <= 0 {
 		return Solution{}
 	}
@@ -42,9 +37,9 @@ func (s BruteForce) impl(limit int, position int) Solution {
 	}
 
 	bestQ, best := 0, Solution{}
-	for q := 0; q*s.knapsack.Items[position].Weight <= limit && q <= s.knapsack.Items[position].Pieces; q++ {
-		sol := s.impl(limit-q*s.knapsack.Items[position].Weight, position-1)
-		sol.Value += q * s.knapsack.Items[position].Value
+	for q := 0; q*s.Knapsack.Items[position].Weight <= limit && q <= s.Knapsack.Items[position].Pieces; q++ {
+		sol := s.impl(limit-q*s.Knapsack.Items[position].Weight, position-1)
+		sol.Value += q * s.Knapsack.Items[position].Value
 
 		if sol.Value > best.Value {
 			bestQ, best = q, sol
@@ -53,11 +48,11 @@ func (s BruteForce) impl(limit int, position int) Solution {
 
 	if bestQ > 0 {
 		old := best.Quantities
-		best.Quantities = make([]int, len(s.knapsack.Items))
+		best.Quantities = make([]int, len(s.Knapsack.Items))
 		copy(best.Quantities, old)
 
 		best.Quantities[position] = bestQ
-		best.Weight += bestQ * s.knapsack.Items[position].Weight
+		best.Weight += bestQ * s.Knapsack.Items[position].Weight
 	}
 
 	s.cache[key_] = best

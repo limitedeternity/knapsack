@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	. "knapsack/common"
 	. "knapsack/functools"
 )
 
@@ -38,15 +40,15 @@ func printSolution(sol Solution) {
 	fmt.Printf("Total weight: %d\n", sol.Weight)
 }
 
-func TestBruteForce(t *testing.T) {
+func TestSimpleSolver(t *testing.T) {
 	var (
 		sol Solution
 		ok  bool
 	)
 
-	if sol, ok = solutions["BruteForce"]; !ok {
-		sol = NewKnapsack[BruteForce](capacity).Pack(items)
-		solutions["BruteForce"] = sol
+	if sol, ok = solutions["SimpleSolver"]; !ok {
+		sol = NewKnapsack[Item, *SimpleSolver]().WithCapacity(capacity).Pack(items)
+		solutions["SimpleSolver"] = sol
 	}
 
 	printSolution(sol)
@@ -67,15 +69,15 @@ func TestBruteForce(t *testing.T) {
 	)
 }
 
-func TestDynamic(t *testing.T) {
+func TestDPSolver(t *testing.T) {
 	var (
 		sol Solution
 		ok  bool
 	)
 
-	if sol, ok = solutions["Dynamic"]; !ok {
-		sol = NewKnapsack[Dynamic](capacity).Pack(items)
-		solutions["Dynamic"] = sol
+	if sol, ok = solutions["DPSolver"]; !ok {
+		sol = NewKnapsack[Item, *DPSolver]().WithCapacity(capacity).Pack(items)
+		solutions["DPSolver"] = sol
 	}
 
 	printSolution(sol)
@@ -97,8 +99,8 @@ func TestDynamic(t *testing.T) {
 }
 
 func TestSameResults(t *testing.T) {
-	t.Run("TestBruteForce", TestBruteForce)
-	t.Run("TestDynamic", TestDynamic)
+	t.Run("TestSimpleSolver", TestSimpleSolver)
+	t.Run("TestDPSolver", TestDPSolver)
 
-	require.True(t, reflect.DeepEqual(solutions["BruteForce"], solutions["Dynamic"]))
+	require.True(t, reflect.DeepEqual(solutions["SimpleSolver"], solutions["DPSolver"]))
 }
