@@ -7,43 +7,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	. "knapsack/functools"
 )
-
-func Map[T, V any](ts []T, fn func(T) V) []V {
-	result := make([]V, 0, len(ts))
-	for _, t := range ts {
-		result = append(result, fn(t))
-	}
-
-	return result
-}
-
-func Reduce[T, M any](ts []T, fn func(M, T) M, init M) M {
-	acc := init
-	for _, t := range ts {
-		acc = fn(acc, t)
-	}
-
-	return acc
-}
-
-type Pair[T, U any] struct {
-	First  T
-	Second U
-}
-
-func Zip[T, U any](ts []T, us []U) []Pair[T, U] {
-	if len(ts) != len(us) {
-		panic("slices have different length")
-	}
-
-	pairs := make([]Pair[T, U], 0, len(ts))
-	for i := range ts {
-		pairs = append(pairs, Pair[T, U]{ts[i], us[i]})
-	}
-
-	return pairs
-}
 
 var (
 	items = []Item{

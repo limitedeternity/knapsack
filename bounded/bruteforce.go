@@ -41,23 +41,23 @@ func (s BruteForce) impl(limit int, position int) Solution {
 		return sol
 	}
 
-	bestI, best := 0, Solution{}
-	for i := 0; i*s.knapsack.Items[position].Weight <= limit && i <= s.knapsack.Items[position].Pieces; i++ {
-		sol := s.impl(limit-i*s.knapsack.Items[position].Weight, position-1)
-		sol.Value += i * s.knapsack.Items[position].Value
+	bestQ, best := 0, Solution{}
+	for q := 0; q*s.knapsack.Items[position].Weight <= limit && q <= s.knapsack.Items[position].Pieces; q++ {
+		sol := s.impl(limit-q*s.knapsack.Items[position].Weight, position-1)
+		sol.Value += q * s.knapsack.Items[position].Value
 
 		if sol.Value > best.Value {
-			bestI, best = i, sol
+			bestQ, best = q, sol
 		}
 	}
 
-	if bestI > 0 {
+	if bestQ > 0 {
 		old := best.Quantities
 		best.Quantities = make([]int, len(s.knapsack.Items))
 		copy(best.Quantities, old)
 
-		best.Quantities[position] = bestI
-		best.Weight += bestI * s.knapsack.Items[position].Weight
+		best.Quantities[position] = bestQ
+		best.Weight += bestQ * s.knapsack.Items[position].Weight
 	}
 
 	s.cache[key_] = best
