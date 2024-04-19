@@ -13,6 +13,7 @@ import (
 	"knapsack/bounded"
 	. "knapsack/common"
 	"knapsack/unbounded"
+	ft "knapsack/utils/functools"
 )
 
 type argT struct {
@@ -78,7 +79,7 @@ func main() {
 			return err
 		}
 
-		var sol Solution
+		var formattedSol string
 
 		switch argv.Knapsack {
 		case "unbounded":
@@ -87,7 +88,15 @@ func main() {
 				return err
 			}
 
-			sol = NewKnapsack[unbounded.Item, *unbounded.DPSolver](argv.Capacity).Pack(items)
+			sol := NewKnapsack[unbounded.Item, *unbounded.DPSolver](argv.Capacity).Pack(items)
+			formattedSol = sol.String(
+				struct{ ItemNames []string }{
+					ItemNames: ft.Reduce(items,
+						func(acc []string, val unbounded.Item) []string {
+							return append(acc, val.Item)
+						}, nil,
+					),
+				})
 
 		default:
 			var items []bounded.Item
@@ -95,14 +104,21 @@ func main() {
 				return err
 			}
 
-			sol = NewKnapsack[bounded.Item, *bounded.DPSolver](argv.Capacity).Pack(items)
+			sol := NewKnapsack[bounded.Item, *bounded.DPSolver](argv.Capacity).Pack(items)
+			formattedSol = sol.String(
+				struct{ ItemNames []string }{
+					ItemNames: ft.Reduce(items,
+						func(acc []string, val bounded.Item) []string {
+							return append(acc, val.Item)
+						}, nil,
+					),
+				})
 		}
 
 		close(cancel)
 		<-ack
 
-		// TODO: Print solution
-		ctx.String("\r%+v\n", sol)
+		ctx.String("\r%s", formattedSol)
 
 		return nil
 	}))

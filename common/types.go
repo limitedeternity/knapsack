@@ -1,14 +1,32 @@
 package common
 
 import (
+	"fmt"
 	"log"
 	"reflect"
+	"strings"
 )
 
 type Solution struct {
 	Weight     int
 	Value      int
 	Quantities []int
+}
+
+func (s Solution) String(params struct{ ItemNames []string }) string {
+	var builder strings.Builder
+
+	builder.WriteString("Taking:\n")
+	for i, q := range s.Quantities {
+		if q > 0 {
+			builder.WriteString(fmt.Sprintf("+ %s: %d\n", params.ItemNames[i], q))
+		}
+	}
+
+	builder.WriteString(fmt.Sprintf("Total value: %d\n", s.Value))
+	builder.WriteString(fmt.Sprintf("Total weight: %d\n", s.Weight))
+
+	return builder.String()
 }
 
 type Solver interface {
