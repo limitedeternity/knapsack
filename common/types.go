@@ -13,7 +13,7 @@ type Solution struct {
 	Quantities []int
 }
 
-func (s Solution) String(params struct{ ItemNames []string }) string {
+func (s *Solution) String(params struct{ ItemNames []string }) string {
 	var builder strings.Builder
 
 	builder.WriteString("Taking:\n")
