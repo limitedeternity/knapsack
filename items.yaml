@@ -1,24 +1,31 @@
 - item: 1m
   weight: 1
   value: 1
+
 - item: 2m
   weight: 2
   value: 5
+
 - item: 3m
   weight: 3
   value: 8
+
 - item: 4m
   weight: 4
   value: 9
+
 - item: 5m
   weight: 5
   value: 10
+
 - item: 6m
   weight: 6
   value: 17
+
 - item: 7m
   weight: 7
   value: 17
+
 - item: 8m
   weight: 8
   value: 20
