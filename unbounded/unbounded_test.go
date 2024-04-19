@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	. "knapsack/common"
-	. "knapsack/utils/functools"
+	ft "knapsack/utils/functools"
 )
 
 var (
@@ -23,7 +23,7 @@ var (
 		{Item: "8m", Weight: 8, Value: 20},
 	}
 	capacity  = len(items)
-	solutions = map[string]Solution{}
+	solutions = make(map[string]Solution, 1)
 )
 
 func printSolution(sol *Solution) {
@@ -39,14 +39,17 @@ func printSolution(sol *Solution) {
 }
 
 func TestDPSolver(t *testing.T) {
+	t.Parallel()
+	solverName := "DPSolver"
+
 	var (
 		sol Solution
 		ok  bool
 	)
 
-	if sol, ok = solutions["DPSolver"]; !ok {
+	if sol, ok = solutions[solverName]; !ok {
 		sol = NewKnapsack[Item, *DPSolver]().WithCapacity(capacity).Pack(items)
-		solutions["DPSolver"] = sol
+		solutions[solverName] = sol
 	}
 
 	printSolution(&sol)
@@ -54,12 +57,12 @@ func TestDPSolver(t *testing.T) {
 	require.LessOrEqual(t, sol.Weight, capacity)
 	require.Equal(t, sol.Value, 22)
 
-	require.Equal(t, sol.Weight, Reduce(
-		Zip(
-			Map(items, func(item Item) int { return item.Weight }),
+	require.Equal(t, sol.Weight, ft.Reduce(
+		ft.Zip(
+			ft.Map(items, func(item Item) int { return item.Weight }),
 			sol.Quantities,
 		),
-		func(acc int, pair Pair[int, int]) int {
+		func(acc int, pair ft.Pair[int, int]) int {
 			itemWeight, itemQuantity := pair.First, pair.Second
 			return acc + itemWeight*itemQuantity
 		},
