@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	. "knapsack/common"
-	. "knapsack/functools"
+	. "knapsack/utils/functools"
 )
 
 var (
