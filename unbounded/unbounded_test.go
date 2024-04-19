@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	items = []Item{
+	capacity = len(items)
+	items    = []Item{
 		{Item: "1m", Weight: 1, Value: 1},
 		{Item: "2m", Weight: 2, Value: 5},
 		{Item: "3m", Weight: 3, Value: 8},
@@ -22,20 +23,21 @@ var (
 		{Item: "7m", Weight: 7, Value: 17},
 		{Item: "8m", Weight: 8, Value: 20},
 	}
-	capacity  = len(items)
+
 	solutions = make(map[string]Solution, 1)
 )
 
 func printSolution(sol *Solution) {
-	fmt.Println("Taking:")
-	for i, q := range sol.Quantities {
-		if q > 0 {
-			fmt.Printf("+ %s: %d\n", items[i].Item, q)
-		}
-	}
+	formattedSol := sol.String(
+		struct{ ItemNames []string }{
+			ItemNames: ft.Reduce(items,
+				func(acc []string, val Item) []string {
+					return append(acc, val.Item)
+				}, nil,
+			),
+		})
 
-	fmt.Printf("Total value: %d\n", sol.Value)
-	fmt.Printf("Total weight: %d\n", sol.Weight)
+	fmt.Print(formattedSol)
 }
 
 func TestDPSolver(t *testing.T) {
