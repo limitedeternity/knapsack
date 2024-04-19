@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	. "knapsack/common"
-	. "knapsack/utils/functools"
+	ft "knapsack/utils/functools"
 	kl "knapsack/utils/keylock"
 )
 
@@ -77,12 +77,12 @@ func TestSimpleSolver(t *testing.T) {
 	require.LessOrEqual(t, sol.Weight, capacity)
 	require.Equal(t, sol.Value, sol.Weight)
 
-	require.Equal(t, sol.Weight, Reduce(
-		Zip(
-			Map(items, func(item Item) int { return item.Weight }),
+	require.Equal(t, sol.Weight, ft.Reduce(
+		ft.Zip(
+			ft.Map(items, func(item Item) int { return item.Weight }),
 			sol.Quantities,
 		),
-		func(acc int, pair Pair[int, int]) int {
+		func(acc int, pair ft.Pair[int, int]) int {
 			itemWeight, itemQuantity := pair.First, pair.Second
 			return acc + itemWeight*itemQuantity
 		},
@@ -118,12 +118,12 @@ func TestDPSolver(t *testing.T) {
 	require.LessOrEqual(t, sol.Weight, capacity)
 	require.Equal(t, sol.Value, sol.Weight)
 
-	require.Equal(t, sol.Weight, Reduce(
-		Zip(
-			Map(items, func(item Item) int { return item.Weight }),
+	require.Equal(t, sol.Weight, ft.Reduce(
+		ft.Zip(
+			ft.Map(items, func(item Item) int { return item.Weight }),
 			sol.Quantities,
 		),
-		func(acc int, pair Pair[int, int]) int {
+		func(acc int, pair ft.Pair[int, int]) int {
 			itemWeight, itemQuantity := pair.First, pair.Second
 			return acc + itemWeight*itemQuantity
 		},
@@ -137,10 +137,10 @@ func TestSameResults(t *testing.T) {
 	t.Run("TestDPSolver", TestDPSolver)
 
 	expectedSolvers := map[string]bool{"SimpleSolver": false, "DPSolver": false}
-	for !Reduce(maps.Values(expectedSolvers), func(acc bool, val bool) bool { return acc && val }, true) {
+	for !ft.Reduce(maps.Values(expectedSolvers), func(acc bool, val bool) bool { return acc && val }, true) {
 		solverName := <-solverStarted
 
-		if seen, ok := expectedSolvers[solverName]; ok && !seen {
+		if seen, expected := expectedSolvers[solverName]; expected && !seen {
 			expectedSolvers[solverName] = true
 		} else {
 			solverStarted <- solverName
