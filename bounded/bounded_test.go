@@ -32,7 +32,7 @@ var (
 	solutions = struct {
 		Store map[string]Solution
 		Lock  *kl.KeyLock
-	}{Store: make(map[string]Solution), Lock: kl.NewKeyLock()}
+	}{Store: make(map[string]Solution, 2), Lock: kl.NewKeyLock()}
 
 	solverStarted = make(chan string, 200)
 )
