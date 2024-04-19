@@ -3,9 +3,9 @@ package bounded
 import (
 	"fmt"
 	"math"
-	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
@@ -152,9 +152,9 @@ func TestSameResults(t *testing.T) {
 
 	defer unlock()
 
-	require.False(t, reflect.DeepEqual(solutions.Store["SimpleSolver"], Solution{}))
-	require.False(t, reflect.DeepEqual(solutions.Store["DPSolver"], Solution{}))
-	require.True(t, reflect.DeepEqual(solutions.Store["SimpleSolver"], solutions.Store["DPSolver"]))
+	require.NotZero(t, solutions.Store["SimpleSolver"])
+	require.NotZero(t, solutions.Store["DPSolver"])
+	require.Empty(t, cmp.Diff(solutions.Store["SimpleSolver"], solutions.Store["DPSolver"]))
 }
 
 func TestItem_Unmarshal(t *testing.T) {
