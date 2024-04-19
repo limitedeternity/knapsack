@@ -28,6 +28,8 @@ func (s *SolverBase[I, S]) InjectKnapsack(knapsack any) {
 	switch v := knapsack.(type) {
 	case *Knapsack[I, S]:
 		s.Knapsack = v
+	case nil:
+		s.Knapsack = nil
 	default:
 		log.Fatalf("Unsupported knapsack type: %T, expected: %T", knapsack, s.Knapsack)
 	}
@@ -58,9 +60,15 @@ func (k *Knapsack[I, S]) Pack(items []I) Solution {
 
 	k.Items = items
 
+	if reflect.TypeFor[S]().Kind() != reflect.Ptr {
+		log.Fatal("Solver type parameter must be a pointer")
+	}
+
 	solver := reflect.New(reflect.TypeFor[S]().Elem()).Interface().(Solver)
 	solver.GetBase().InjectKnapsack(k)
+
 	sol := solver.Solve()
+	solver.GetBase().InjectKnapsack(nil)
 
 	solver = nil
 	return sol
