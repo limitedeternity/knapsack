@@ -38,15 +38,16 @@ var (
 )
 
 func printSolution(sol *Solution) {
-	fmt.Println("Taking:")
-	for i, q := range sol.Quantities {
-		if q > 0 {
-			fmt.Printf("+ %s: %d\n", items[i].Item, q)
-		}
-	}
+	formattedSol := sol.String(
+		struct{ ItemNames []string }{
+			ItemNames: ft.Reduce(items,
+				func(acc []string, val Item) []string {
+					return append(acc, val.Item)
+				}, nil,
+			),
+		})
 
-	fmt.Printf("Total value: %d\n", sol.Value)
-	fmt.Printf("Total weight: %d\n", sol.Weight)
+	fmt.Print(formattedSol)
 }
 
 func TestSimpleSolver(t *testing.T) {
