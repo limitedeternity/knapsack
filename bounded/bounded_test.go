@@ -7,14 +7,17 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 
 	. "knapsack/common"
 	. "knapsack/utils/functools"
+	kl "knapsack/utils/keylock"
 )
 
 var (
-	items = []Item{
+	capacity = 100_000
+	items    = []Item{
 		{Item: "FXIP", Weight: int(math.Round(65.67)), Value: int(math.Round(65.67)), Pieces: 481},
 		{Item: "FXKZ", Weight: int(math.Round(562.39)), Value: int(math.Round(562.39)), Pieces: 9},
 		{Item: "FXIM", Weight: int(math.Round(149.11)), Value: int(math.Round(149.11)), Pieces: 69},
@@ -25,15 +28,20 @@ var (
 		{Item: "FXEM", Weight: int(math.Round(87.83)), Value: int(math.Round(87.83)), Pieces: 260},
 		{Item: "FXGD", Weight: int(math.Round(132.86)), Value: int(math.Round(132.86)), Pieces: 73},
 	}
-	capacity  = 100_000
-	solutions = map[string]Solution{}
+
+	solutions = struct {
+		Store map[string]Solution
+		Lock  *kl.KeyLock
+	}{Store: make(map[string]Solution), Lock: kl.NewKeyLock()}
+
+	solverStarted = make(chan string, 200)
 )
 
 func printSolution(sol *Solution) {
 	fmt.Println("Taking:")
 	for i, q := range sol.Quantities {
 		if q > 0 {
-			fmt.Printf("+ %s: %d/%d\n", items[i].Item, q, items[i].Pieces)
+			fmt.Printf("+ %s: %d\n", items[i].Item, q)
 		}
 	}
 
@@ -42,15 +50,27 @@ func printSolution(sol *Solution) {
 }
 
 func TestSimpleSolver(t *testing.T) {
+	t.Parallel()
+	solverName := "SimpleSolver"
+
 	var (
 		sol Solution
 		ok  bool
 	)
 
-	if sol, ok = solutions["SimpleSolver"]; !ok {
-		sol = NewKnapsack[Item, *SimpleSolver]().WithCapacity(capacity).Pack(items)
-		solutions["SimpleSolver"] = sol
-	}
+	canceled, unlock := solutions.Lock.LockKeys([]string{solverName}, nil)
+	solverStarted <- solverName
+
+	require.False(t, canceled)
+
+	func() {
+		defer unlock()
+
+		if sol, ok = solutions.Store[solverName]; !ok {
+			sol = NewKnapsack[Item, *SimpleSolver]().WithCapacity(capacity).Pack(items)
+			solutions.Store[solverName] = sol
+		}
+	}()
 
 	printSolution(&sol)
 
@@ -71,15 +91,27 @@ func TestSimpleSolver(t *testing.T) {
 }
 
 func TestDPSolver(t *testing.T) {
+	t.Parallel()
+	solverName := "DPSolver"
+
 	var (
 		sol Solution
 		ok  bool
 	)
 
-	if sol, ok = solutions["DPSolver"]; !ok {
-		sol = NewKnapsack[Item, *DPSolver]().WithCapacity(capacity).Pack(items)
-		solutions["DPSolver"] = sol
-	}
+	canceled, unlock := solutions.Lock.LockKeys([]string{solverName}, nil)
+	solverStarted <- solverName
+
+	require.False(t, canceled)
+
+	func() {
+		defer unlock()
+
+		if sol, ok = solutions.Store[solverName]; !ok {
+			sol = NewKnapsack[Item, *DPSolver]().WithCapacity(capacity).Pack(items)
+			solutions.Store[solverName] = sol
+		}
+	}()
 
 	printSolution(&sol)
 
@@ -100,10 +132,29 @@ func TestDPSolver(t *testing.T) {
 }
 
 func TestSameResults(t *testing.T) {
+	t.Parallel()
 	t.Run("TestSimpleSolver", TestSimpleSolver)
 	t.Run("TestDPSolver", TestDPSolver)
 
-	require.True(t, reflect.DeepEqual(solutions["SimpleSolver"], solutions["DPSolver"]))
+	expectedSolvers := map[string]bool{"SimpleSolver": false, "DPSolver": false}
+	for !Reduce(maps.Values(expectedSolvers), func(acc bool, val bool) bool { return acc && val }, true) {
+		solverName := <-solverStarted
+
+		if seen, ok := expectedSolvers[solverName]; ok && !seen {
+			expectedSolvers[solverName] = true
+		} else {
+			solverStarted <- solverName
+		}
+	}
+
+	canceled, unlock := solutions.Lock.LockKeys(maps.Keys(expectedSolvers), nil)
+	require.False(t, canceled)
+
+	defer unlock()
+
+	require.False(t, reflect.DeepEqual(solutions.Store["SimpleSolver"], Solution{}))
+	require.False(t, reflect.DeepEqual(solutions.Store["DPSolver"], Solution{}))
+	require.True(t, reflect.DeepEqual(solutions.Store["SimpleSolver"], solutions.Store["DPSolver"]))
 }
 
 func TestItem_Unmarshal(t *testing.T) {
