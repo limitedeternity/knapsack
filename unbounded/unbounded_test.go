@@ -79,6 +79,19 @@ value: 1
 		require.NoError(t, yaml.Unmarshal(data, &item))
 		require.Equal(t, item, items[0])
 	})
+
+	t.Run("IgnorePieces", func(t *testing.T) {
+		data := []byte(`
+item: 1m
+weight: 1
+value: 1
+pieces: 481
+`)
+
+		var item Item
+		require.NoError(t, yaml.Unmarshal(data, &item))
+		require.Equal(t, item, items[0])
+	})
 }
 
 func TestItem_Marshal(t *testing.T) {
