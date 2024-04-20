@@ -5,6 +5,8 @@ import (
 	"log"
 	"reflect"
 	"strings"
+
+	ft "knapsack/utils/functools"
 )
 
 type Solution struct {
@@ -16,7 +18,10 @@ type Solution struct {
 func (s *Solution) String(params struct{ ItemNames []string }) string {
 	var builder strings.Builder
 
-	builder.WriteString("Taking:\n")
+	if taking := ft.Filter(s.Quantities, func(q int) bool { return q > 0 }); len(taking) > 0 {
+		builder.WriteString("Taking:\n")
+	}
+
 	for i, q := range s.Quantities {
 		if q > 0 {
 			builder.WriteString(fmt.Sprintf("+ %s: %d\n", params.ItemNames[i], q))
