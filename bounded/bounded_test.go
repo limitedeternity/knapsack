@@ -3,6 +3,7 @@ package bounded
 import (
 	"fmt"
 	"math"
+	"sync"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -30,9 +31,9 @@ var (
 	}
 
 	solutions = struct {
-		Store map[string]Solution
-		Lock  *kl.KeyLock
-	}{Store: make(map[string]Solution, 2), Lock: kl.NewKeyLock()}
+		Map  sync.Map
+		Lock *kl.KeyLock
+	}{Lock: kl.NewKeyLock()}
 
 	solverStarted = make(chan string, 200)
 )
@@ -54,27 +55,26 @@ func TestSimpleSolver(t *testing.T) {
 	t.Parallel()
 	solverName := "SimpleSolver"
 
-	var (
-		sol Solution
-		ok  bool
-	)
-
 	canceled, unlock := solutions.Lock.LockKeys([]string{solverName}, nil)
 	solverStarted <- solverName
 
 	require.False(t, canceled)
 
+	var sol Solution
 	func() {
 		defer unlock()
 
-		if sol, ok = solutions.Store[solverName]; !ok {
+		if val, exists := solutions.Map.Load(solverName); !exists {
 			sol = NewKnapsack[Item, *SimpleSolver]().WithCapacity(capacity).Pack(items)
-			solutions.Store[solverName] = sol
+			solutions.Map.Store(solverName, sol)
+		} else {
+			sol = val.(Solution)
 		}
 	}()
 
 	printSolution(&sol)
 
+	require.NotZero(t, sol)
 	require.LessOrEqual(t, sol.Weight, capacity)
 	require.Equal(t, sol.Value, sol.Weight)
 
@@ -95,27 +95,26 @@ func TestDPSolver(t *testing.T) {
 	t.Parallel()
 	solverName := "DPSolver"
 
-	var (
-		sol Solution
-		ok  bool
-	)
-
 	canceled, unlock := solutions.Lock.LockKeys([]string{solverName}, nil)
 	solverStarted <- solverName
 
 	require.False(t, canceled)
 
+	var sol Solution
 	func() {
 		defer unlock()
 
-		if sol, ok = solutions.Store[solverName]; !ok {
+		if val, exists := solutions.Map.Load(solverName); !exists {
 			sol = NewKnapsack[Item, *DPSolver]().WithCapacity(capacity).Pack(items)
-			solutions.Store[solverName] = sol
+			solutions.Map.Store(solverName, sol)
+		} else {
+			sol = val.(Solution)
 		}
 	}()
 
 	printSolution(&sol)
 
+	require.NotZero(t, sol)
 	require.LessOrEqual(t, sol.Weight, capacity)
 	require.Equal(t, sol.Value, sol.Weight)
 
@@ -153,9 +152,15 @@ func TestSameResults(t *testing.T) {
 
 	defer unlock()
 
-	require.NotZero(t, solutions.Store["SimpleSolver"])
-	require.NotZero(t, solutions.Store["DPSolver"])
-	require.Empty(t, cmp.Diff(solutions.Store["SimpleSolver"], solutions.Store["DPSolver"]))
+	simple, ok := solutions.Map.Load("SimpleSolver")
+	require.True(t, ok)
+	require.NotZero(t, simple)
+
+	dp, ok := solutions.Map.Load("DPSolver")
+	require.True(t, ok)
+	require.NotZero(t, dp)
+
+	require.Empty(t, cmp.Diff(simple, dp))
 }
 
 func TestItem_Unmarshal(t *testing.T) {
