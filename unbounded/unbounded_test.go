@@ -56,6 +56,7 @@ func TestDPSolver(t *testing.T) {
 
 	printSolution(&sol)
 
+	require.NotZero(t, sol)
 	require.LessOrEqual(t, sol.Weight, capacity)
 	require.Equal(t, sol.Value, 22)
 
