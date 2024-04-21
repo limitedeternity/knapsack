@@ -88,11 +88,17 @@ func (k *Knapsack[I, S]) Pack(items []I) Solution {
 	}
 
 	solver := reflect.New(reflect.TypeFor[S]().Elem()).Interface().(Solver)
-	solver.GetBase().InjectKnapsack(k)
+	base := solver.GetBase()
 
+	if reflect.TypeOf(base).Kind() != reflect.Ptr {
+		log.Fatal("GetBase() must return a pointer")
+	}
+
+	base.InjectKnapsack(k)
 	sol := solver.Solve()
-	solver.GetBase().InjectKnapsack(nil)
 
+	base.InjectKnapsack(nil)
 	solver = nil
+
 	return sol
 }
