@@ -54,7 +54,7 @@ func (s *SolverBase[I, S]) InjectKnapsack(knapsack any) {
 	case nil:
 		s.Knapsack = nil
 	default:
-		log.Fatalf("Unsupported knapsack type: %T, expected: %T", knapsack, s.Knapsack)
+		log.Panicf("Unsupported knapsack type: %T, expected: %T", knapsack, s.Knapsack)
 	}
 }
 
@@ -78,20 +78,20 @@ func (k *Knapsack[I, S]) WithCapacity(limit int) *Knapsack[I, S] {
 
 func (k *Knapsack[I, S]) Pack(items []I) Solution {
 	if k.Limit <= 0 {
-		log.Fatal("Knapsack capacity must be greater than zero")
+		log.Panic("Knapsack capacity must be greater than zero")
 	}
 
 	k.Items = items
 
 	if reflect.TypeFor[S]().Kind() != reflect.Ptr {
-		log.Fatal("Solver type parameter must be a pointer")
+		log.Panic("Solver type parameter must be a pointer")
 	}
 
 	solver := reflect.New(reflect.TypeFor[S]().Elem()).Interface().(Solver)
 	base := solver.GetBase()
 
 	if reflect.TypeOf(base).Kind() != reflect.Ptr {
-		log.Fatal("GetBase() must return a pointer")
+		log.Panic("GetBase() must return a pointer")
 	}
 
 	base.InjectKnapsack(k)
